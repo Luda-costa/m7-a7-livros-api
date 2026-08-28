@@ -69,8 +69,16 @@ app.post("/api/livros", async (req, res) => {
     });
   }
 
+  const ultimoLivro = await livrosCollection()
+    .find({}, { projection: { _id: 0, id: 1 } })
+    .sort({ id: -1 })
+    .limit(1)
+    .toArray();
+
+  const proximoId = (ultimoLivro[0]?.id ?? 0) + 1;
+
   const novoLivro = {
-    id: Date.now(),
+    id: proximoId,
     titulo,
     descricao,
     categoria,
@@ -81,6 +89,26 @@ app.post("/api/livros", async (req, res) => {
 
   await livrosCollection().insertOne(novoLivro);
   res.status(201).json(novoLivro);
+});
+
+app.delete("/api/livros/:id", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isFinite(id)) {
+    return res.status(400).json({
+      erro: "ID inválido."
+    });
+  }
+
+  const resultado = await livrosCollection().deleteOne({ id });
+
+  if (resultado.deletedCount === 0) {
+    return res.status(404).json({
+      erro: "Livro não encontrado."
+    });
+  }
+
+  res.status(204).send();
 });
 
 const PORT = Number(process.env.PORT) || 3000;
