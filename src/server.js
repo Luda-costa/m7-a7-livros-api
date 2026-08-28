@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import {
 conectarBanco,
-chamadosCollection
+LivrosCollection
 } from "./db.js";
 const app = express();
 app.use(cors());
@@ -14,68 +14,69 @@ app.get("/api/health", (_req, res) => {
 res.json({status: "ok"});
 });
 
-app.get("/api/chamados", async (_req, res) => {
+app.get("/api/Livros", async (_req, res) => {
 try {
-const chamados =
-await chamadosCollection()
+const Livros =
+await LivrosCollection()
 .find(
 {},
 { projection: { _id: 0 } }
 )
 .sort({ id: 1 })
 .toArray();
-res.json(chamados);
+res.json(Livros);
 } catch {
 res.status(500).json({
-erro: "Erro ao listar chamados."
+erro: "Erro ao listar Livros."
 });
 }
 });
 
-app.get("/api/chamados/:id", async (req, res) => {
+app.get("/api/Livros/:id", async (req, res) => {
 const id = Number(req.params.id);
 if (!Number.isFinite(id)) {
 return res.status(400).json({
 erro: "ID inválido."
 });
 }
-const chamado =
-await chamadosCollection().findOne(
+const Livro =
+await LivrosCollection().findOne(
 { id },
 { projection: { _id: 0 } }
 );
-if (!chamado) {
+if (!Livro) {
 return res.status(404).json({
-erro: "Chamado não encontrado."
+erro: "Livro não encontrado."
 });
 }
-res.json(chamado);
+res.json(Livro);
 });
 
-app.post("/api/chamados", async (req, res) => {
+app.post("/api/Livros", async (req, res) => {
 const {
 titulo,
 descricao,
-prioridade,
+categoria,
 status,
-responsavel
+autor,
+ano
 } = req.body;
-if (!titulo || !descricao || !prioridade || !status) {
+if (!titulo || !descricao || !categoria || !status || !ano || !autor) {
 return res.status(400).json({
 erro: "Dados obrigatórios ausentes."
 });
 }
-const novoChamado = {
+const novoLivro = {
 id: Date.now(),
 titulo,
 descricao,
-prioridade,
+categoria,
 status,
-responsavel,
+autor,
 criadoEm: new Date().toISOString().slice(0, 10)
 };
-await chamadosCollection().insertOne(novoChamado);
-res.status(201).json(novoChamado);
+await LivrosCollection().insertOne(novoLivro);
+res.status(201).json(novoLivro);
 });
 
 const PORT =

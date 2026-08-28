@@ -24,7 +24,7 @@ await client.connect();
 
 const db = client.db("m7-frontend");
 
-collection = db.collection("chamados");
+collection = db.collection("livros");
 
 await db.command({ ping: 1 });
 
@@ -32,7 +32,7 @@ console.log("MongoDB conectado.");
 
 }
 
-export function chamadosCollection() {
+export function LivrosCollection() {
 
 if (!collection) {
 
