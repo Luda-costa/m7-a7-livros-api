@@ -32,7 +32,7 @@ console.log("MongoDB conectado.");
 
 }
 
-export function LivrosCollection() {
+export function livrosCollection() {
 
 if (!collection) {
 

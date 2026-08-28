@@ -2,86 +2,91 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import {
-conectarBanco,
-LivrosCollection
+  conectarBanco,
+  livrosCollection
 } from "./db.js";
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-//rotas
+// rotas
 app.get("/api/health", (_req, res) => {
-res.json({status: "ok"});
+  res.json({ status: "ok" });
 });
 
-app.get("/api/Livros", async (_req, res) => {
-try {
-const Livros =
-await LivrosCollection()
-.find(
-{},
-{ projection: { _id: 0 } }
-)
-.sort({ id: 1 })
-.toArray();
-res.json(Livros);
-} catch {
-res.status(500).json({
-erro: "Erro ao listar Livros."
-});
-}
+app.get("/api/livros", async (_req, res) => {
+  try {
+    const livros = await livrosCollection()
+      .find({}, { projection: { _id: 0 } })
+      .sort({ id: 1 })
+      .toArray();
+
+    res.json(livros);
+  } catch {
+    res.status(500).json({
+      erro: "Erro ao listar livros."
+    });
+  }
 });
 
-app.get("/api/Livros/:id", async (req, res) => {
-const id = Number(req.params.id);
-if (!Number.isFinite(id)) {
-return res.status(400).json({
-erro: "ID inválido."
-});
-}
-const Livro =
-await LivrosCollection().findOne(
-{ id },
-{ projection: { _id: 0 } }
-);
-if (!Livro) {
-return res.status(404).json({
-erro: "Livro não encontrado."
-});
-}
-res.json(Livro);
+app.get("/api/livros/:id", async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (!Number.isFinite(id)) {
+    return res.status(400).json({
+      erro: "ID inválido."
+    });
+  }
+
+  const livro = await livrosCollection().findOne(
+    { id },
+    { projection: { _id: 0 } }
+  );
+
+  if (!livro) {
+    return res.status(404).json({
+      erro: "Livro não encontrado."
+    });
+  }
+
+  res.json(livro);
 });
 
-app.post("/api/Livros", async (req, res) => {
-const {
-titulo,
-descricao,
-categoria,
-status,
-autor,
-ano
-} = req.body;
-if (!titulo || !descricao || !categoria || !status || !ano || !autor) {
-return res.status(400).json({
-erro: "Dados obrigatórios ausentes."
-});
-}
-const novoLivro = {
-id: Date.now(),
-titulo,
-descricao,
-categoria,
-status,
-autor,
-criadoEm: new Date().toISOString().slice(0, 10)
-};
-await LivrosCollection().insertOne(novoLivro);
-res.status(201).json(novoLivro);
+app.post("/api/livros", async (req, res) => {
+  const {
+    titulo,
+    descricao,
+    categoria,
+    status,
+    autor,
+    ano
+  } = req.body;
+
+  if (!titulo || !descricao || !categoria || !status || !ano || !autor) {
+    return res.status(400).json({
+      erro: "Dados obrigatórios ausentes."
+    });
+  }
+
+  const novoLivro = {
+    id: Date.now(),
+    titulo,
+    descricao,
+    categoria,
+    status,
+    autor,
+    ano
+  };
+
+  await livrosCollection().insertOne(novoLivro);
+  res.status(201).json(novoLivro);
 });
 
-const PORT =
-Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 3000;
+
 await conectarBanco();
+
 app.listen(PORT, "0.0.0.0", () => {
-console.log(`API em http://localhost:${PORT}`);
+  console.log(`API em http://localhost:${PORT}`);
 });
